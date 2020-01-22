@@ -1,0 +1,8 @@
+br/edu/ufam/carvalho/WordCount$1.class
+io/bespin/java/util/Tokenizer.class
+br/edu/ufam/carvalho/WordCount$MyReducer.class
+br/edu/ufam/carvalho/WordCount$Args.class
+br/edu/ufam/carvalho/WordCount$MyMapperIMC.class
+br/edu/ufam/carvalho/WordCount.class
+br/edu/ufam/carvalho/WordCount$MyMapper.class
+br/edu/ufam/carvalho/App.class
