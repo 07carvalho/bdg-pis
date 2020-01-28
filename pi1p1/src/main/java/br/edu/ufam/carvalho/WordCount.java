@@ -59,8 +59,10 @@ public class WordCount extends Configured implements Tool {
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
       for (String word : Tokenizer.tokenize(value.toString())) {
-        WORD.set(word);
-        context.write(WORD, ONE);
+        if (word.matches("[a-zA-Z]+\\.?")) {
+          WORD.set(word);
+          context.write(WORD, ONE);
+        }
       }
     }
   }
@@ -76,10 +78,14 @@ public class WordCount extends Configured implements Tool {
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
       for (String word : Tokenizer.tokenize(value.toString())) {
-        if (counts.containsKey(word)) {
-          counts.put(word, counts.get(word)+1);
-        } else {
-          counts.put(word, 1);
+
+        if (word.matches("[a-zA-Z]+\\.?")) {
+          LOG.info("EEEEEEEEEEEEEEEE");
+          if (counts.containsKey(word)) {
+            counts.put(word, counts.get(word)+1);
+          } else {
+            counts.put(word, 1);
+          }
         }
       }
     }
