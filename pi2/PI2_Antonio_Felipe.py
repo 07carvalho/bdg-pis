@@ -103,7 +103,7 @@ def main(file_path, product):
 if __name__ == "__main__":
     '''
     command example:
-    /usr/local/spark/bin/spark-submit script.py --file='amazon-meta.txt' --product='7157'
+    /usr/local/spark/bin/spark-submit PI2_Antonio_Felipe.py --file='amazon-meta.txt' --product='7157'
     '''
     parser = argparse.ArgumentParser(description='A PySpark Script!')
     parser.add_argument("--file", required=True, type=str, help='File path')
