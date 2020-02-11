@@ -10,6 +10,10 @@ reviews_file_name = 'reviews.csv'
 
 
 def do_csv(file_path):
+    '''
+    this function get the text file and struct in two csv files that will
+    be load by spark in the next step
+    '''
     products_file = open(products_file_name, 'w')
     products_writer = csv.writer(products_file)
     products_writer.writerow(['product_id', 'asin', 'group', 'salesrank'])
@@ -43,7 +47,10 @@ def do_csv(file_path):
                 reviews_writer.writerow(review_dict)
 
 
-def load_df():
+def load_df(product):
+    '''
+    this function load the csv files and make queries
+    '''
     spark = SparkSession.builder.appName("Amazon Meta").getOrCreate()
 
     # load the products data
@@ -55,15 +62,31 @@ def load_df():
     dfReviews.createOrReplaceTempView('review')
 
     # 1.a) Given a product, list the 5 most helpful and highest rated reviews
-    sqlDF1 = spark.sql("SELECT * FROM review WHERE product_id=7157 ORDER BY helpful DESC, rating DESC LIMIT 5")
+    sqlDF1 = spark.sql("SELECT * FROM review WHERE product_id=" + product + " ORDER BY helpful DESC, rating DESC LIMIT 5")
     print(sqlDF1.show())
 
     # 1.b) Given a product, list the 5 most helpful and lowest rated reviews
-    sqlDF2 = spark.sql("SELECT * FROM review WHERE product_id=7157 ORDER BY helpful DESC, rating ASC LIMIT 5")
+    sqlDF2 = spark.sql("SELECT * FROM review WHERE product_id=" + product + " ORDER BY helpful DESC, rating ASC LIMIT 5")
     print(sqlDF2.show())
 
+    # 2) Given a product, list similar products with higher sales than it
+
+    # 3) Given a product, show the daily evolution of the assessment averages over the time span covered in the input file
+
+    group_list = dfProducts.select("group").distinct().collect()
+
+    # 4) List the top 10 selling products in each product group
+    for group in group_list:
+        name = str(group.__getitem__("group"))
+        sql_top_selling = spark.sql("SELECT product_id, salesrank FROM product WHERE group = '" + name + "' ORDER BY salesrank ASC LIMIT 10")
+        sql_top_selling.show()
+
+    # 5) List the 10 products with the highest average of positive useful reviews by product
+
+    # 6) List the 5 product categories with the highest average of positive useful reviews per product
+
+
     # 7) List the 10 customers that most commented by product group
-    group_list = dfProduct.select("group").distinct().collect()
     for group in group_list:
         name = str(group.__getitem__("group"))
         sql_reviewers = spark.sql("SELECT cutomer, COUNT(cutomer) AS counter FROM review r LEFT JOIN product p on r.product_id = p.product_id WHERE p.group = '" + name + "' GROUP BY cutomer ORDER BY counter DESC LIMIT 10")
@@ -72,16 +95,21 @@ def load_df():
     spark.stop()
 
 
-def main(file_path):
-    print('hjdshdj')
+def main(file_path, product):
     do_csv(file_path)
-    load_df()
+    load_df(product)
     
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='A tutorial of argparse!')
+    '''
+    command example:
+    /usr/local/spark/bin/spark-submit script.py --file='amazon-meta.txt' --product='7157'
+    '''
+    parser = argparse.ArgumentParser(description='A PySpark Script!')
     parser.add_argument("--file", required=True, type=str, help='File path')
+    parser.add_argument("--product", required=False, type=str, help='Product Id')
     args = parser.parse_args()
+    
     file_path = args.file
-    # parser.add_argument("--a", default=1, type=int, help="This is the 'a' variable")
-    main(file_path)
+    product = args.product
+    main(file_path, product)
